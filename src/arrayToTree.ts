@@ -3,15 +3,15 @@ export interface TreeItem<T> {
   children: TreeItem<T>[]
 }
 
-export interface Config {
-  id: string,
-  parentId: string,
+export interface Config<T> {
+  id: keyof T,
+  parentId: keyof T,
 }
 
 /**
  * Unflattens an array to a tree with runtime O(n)
  */
-export function arrayToTree<T> (items: T[], config: Config = { id: 'id', parentId: 'parentId' }): TreeItem<T>[] {
+export function arrayToTree<T> (items: T[], idKey = 'id', parentIdKey = 'parentId'): TreeItem<T>[] {
   // the resulting unflattened tree
   const rootItems: TreeItem<T>[] = []
 
@@ -23,17 +23,18 @@ export function arrayToTree<T> (items: T[], config: Config = { id: 'id', parentI
   // in the lookup object and fill it with the data of the parent later
   // if an item has no parentId, add it as a root element to rootItems
   for (const item of items) {
-    const itemId = (item as any)[config.id]
-    const parentId = (item as any)[config.parentId]
-
+    const itemId = (item as any)[idKey]
+    const parentId = (item as any)[parentIdKey]
+    const data = 'data'
+    const children = 'children'
     // look whether item already exists in the lookup table
     if (!Object.prototype.hasOwnProperty.call(lookup, itemId)) {
       // item is not yet there, so add a preliminary item (its data will be added later)
-      lookup[itemId] = { data: null, children: [] } as TreeItem<T>
+      lookup[itemId] = { [data]: null, [children]: [] } as TreeItem<T>
     }
 
     // add the current item's data to the item in the lookup table
-    lookup[itemId].data = item
+    lookup[itemId][data] = item
 
     const TreeItem = lookup[itemId]
 
@@ -46,11 +47,11 @@ export function arrayToTree<T> (items: T[], config: Config = { id: 'id', parentI
       // look whether the parent already exists in the lookup table
       if (!Object.prototype.hasOwnProperty.call(lookup, parentId)) {
         // parent is not yet there, so add a preliminary parent (its data will be added later)
-        lookup[parentId] = { data: null, children: [] }
+        lookup[parentId] = { [data]: null, [children]: [] }
       }
 
       // add the current item to the parent
-      lookup[parentId].children.push(TreeItem)
+      lookup[parentId][children].push(TreeItem)
     }
   }
 

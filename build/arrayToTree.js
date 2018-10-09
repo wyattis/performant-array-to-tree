@@ -3,8 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Unflattens an array to a tree with runtime O(n)
  */
-function arrayToTree(items, config) {
-    if (config === void 0) { config = { id: 'id', parentId: 'parentId' }; }
+function arrayToTree(items, idKey, parentIdKey) {
+    if (idKey === void 0) { idKey = 'id'; }
+    if (parentIdKey === void 0) { parentIdKey = 'parentId'; }
+    var _a, _b;
     // the resulting unflattened tree
     var rootItems = [];
     // stores all already processed items with ther ids as key so we can easily look them up
@@ -15,15 +17,17 @@ function arrayToTree(items, config) {
     // if an item has no parentId, add it as a root element to rootItems
     for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
         var item = items_1[_i];
-        var itemId = item[config.id];
-        var parentId = item[config.parentId];
+        var itemId = item[idKey];
+        var parentId = item[parentIdKey];
+        var data = 'data';
+        var children = 'children';
         // look whether item already exists in the lookup table
         if (!Object.prototype.hasOwnProperty.call(lookup, itemId)) {
             // item is not yet there, so add a preliminary item (its data will be added later)
-            lookup[itemId] = { data: null, children: [] };
+            lookup[itemId] = (_a = {}, _a[data] = null, _a[children] = [], _a);
         }
         // add the current item's data to the item in the lookup table
-        lookup[itemId].data = item;
+        lookup[itemId][data] = item;
         var TreeItem = lookup[itemId];
         if (parentId === null) {
             // is a root item
@@ -34,10 +38,10 @@ function arrayToTree(items, config) {
             // look whether the parent already exists in the lookup table
             if (!Object.prototype.hasOwnProperty.call(lookup, parentId)) {
                 // parent is not yet there, so add a preliminary parent (its data will be added later)
-                lookup[parentId] = { data: null, children: [] };
+                lookup[parentId] = (_b = {}, _b[data] = null, _b[children] = [], _b);
             }
             // add the current item to the parent
-            lookup[parentId].children.push(TreeItem);
+            lookup[parentId][children].push(TreeItem);
         }
     }
     return rootItems;
